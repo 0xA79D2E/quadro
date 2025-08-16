@@ -1,4 +1,3 @@
-#include <cmath>
 #include <Wire.h>
 #include <Adafruit_PWMServoDriver.h>
 
@@ -29,7 +28,7 @@ void setup() {
 
 int angleToPulse(int angle, char type) {
   if (type == 'r') return map(angle, 0, 180, MG996R_MIN, MG996R_MAX);
-  return map(angle, 0, 180, MG90S_MIN, MG90S, MAX);
+  return map(angle, 0, 180, MG90S_MIN, MG90S_MAX);
 }
 
 void setPos(float x, float y) {
@@ -37,13 +36,13 @@ void setPos(float x, float y) {
   // geometrically derived inverse kinematics of 2d planar joint
   float r, alpha, beta, gamma, q1, q2;
   // a1,a2 = link lengths
-  //q1, q2 = joint angles
+  // q1, q2 = joint angles
   // x, y = cartesian coordinates of end effector
-  r = Math.sqrt(pow(x, 2) + pow(y, 2));
+  r = sqrt(x*x + y*y);
 
-  alpha = acos((pow(a1, 2) + pow(a2, 2) - pow(r, 2)) / (2 * a1 * a2));
+  alpha = acos((a1*a1 + a2*a2 - r*r) / (2 * a1 * a2));
 
-  q2 = pi - alpha;
+  q2 = PI - alpha;
 
   gamma = atan(y / x);
 
@@ -53,8 +52,8 @@ void setPos(float x, float y) {
   q1 = gamma - beta;
 
   // algebraically simplified with MATLAB
-  float angle1 = atan(y/x) - atan((2*a1*a2*(1 - (a1^2 + a2^2 - x^2 - y^2)^2/(4*a1^2*a2^2))^(1/2))/(a1^2 - a2^2 + x^2 + y^2)) 
-  float angle2 = pi - acos((a1^2 + a2^2 - x^2 - y^2)/(2*a1*a2)); 
+  float angle1 = atan(y / x) - atan((2 * a1 * a2 * sqrt(1 - pow((a1*a1 + a2*a2 - x*x - y*y), 2) / (4 * a1*a1 * a2*a2))) / (a1*a1 - a2*a2 + x*x + y*y));
+  float angle2 = PI - acos((a1*a1 + a2*a2 - x*x - y*y) / (2 * a1 * a2));
 
   pwm.setPWM(j1, 0, angleToPulse(angle1, 's'));
   pwm.setPWM(j2, 0, angleToPulse(angle2, 's'));
@@ -68,7 +67,7 @@ void loop() {
 
   if (Serial.available() > 0) {
     String input = Serial.readStringUntil('\n');
-    input.trim;
+    input.trim();
 
     int separator = input.indexOf(':');
     if (separator > 0) {
@@ -76,7 +75,7 @@ void loop() {
       String yStr = input.substring(separator + 1);
       int x = xStr.toFloat();
       int y = yStr.toFloat();
-      setPos(float x, float y);
+      setPos(x, y);
       Serial.print("X: ");
       Serial.print(x);
       Serial.print(" Y: ");
