@@ -49,14 +49,19 @@ void setPos(float x, float y) {
 
   beta = atan((a2 * sin(q2)) / (a1 + a2 * cos(q2)));
 
+
   q1 = gamma - beta;
 
-  pwm.setPWM(j1, 0, angleToPulse(q1, 's'));
-  pwm.setPWM(j2, 0, angleToPulse(q2, 's'));
+  // algebraically simplified with MATLAB
+  float angle1 = atan(y/x) - atan((2*a1*a2*(1 - (a1^2 + a2^2 - x^2 - y^2)^2/(4*a1^2*a2^2))^(1/2))/(a1^2 - a2^2 + x^2 + y^2)) 
+  float angle2 = pi - acos((a1^2 + a2^2 - x^2 - y^2)/(2*a1*a2)); 
+
+  pwm.setPWM(j1, 0, angleToPulse(angle1, 's'));
+  pwm.setPWM(j2, 0, angleToPulse(angle2, 's'));
   Serial.print("Angle1: ");
-  Serial.print(q1);
+  Serial.print(angle1);
   Serial.print( "Angle2: ");
-  Serial.println(q2);
+  Serial.println(angle2);
 }
 
 void loop() {
