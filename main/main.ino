@@ -31,37 +31,44 @@ int angleToPulse(int angle, char type) {
   return map(angle, 0, 180, MG90S_MIN, MG90S_MAX);
 }
 
-void setPos(float x, float y) {
+  void setPos(float x, float y) {
 
-  // geometrically derived inverse kinematics of 2d planar joint
-  float r, alpha, beta, gamma, q1, q2;
-  // a1,a2 = link lengths
-  // q1, q2 = joint angles
-  // x, y = cartesian coordinates of end effector
-  r = sqrt(x*x + y*y);
+    // geometrically derived inverse kinematics of 2d planar joint
+    // float r, alpha, beta, gamma, q1, q2;
+    // a1,a2 = link lengths
+    // q1, q2 = joint angles
+    // x, y = cartesian coordinates of end effector
 
-  alpha = acos((a1*a1 + a2*a2 - r*r) / (2 * a1 * a2));
+/*     r = sqrt(x*x + y*y);
 
-  q2 = PI - alpha;
+    alpha = acos((a1*a1 + a2*a2 - r*r) / (2 * a1 * a2));
 
-  gamma = atan(y / x);
+    q2 = PI - alpha;
 
-  beta = atan((a2 * sin(q2)) / (a1 + a2 * cos(q2)));
+    gamma = atan(y / x);
+
+    beta = atan((a2 * sin(q2)) / (a1 + a2 * cos(q2)));
 
 
-  q1 = gamma - beta;
+    q1 = gamma - beta;
+ */
 
-  // algebraically simplified with MATLAB
-  float angle1 = atan(y / x) - atan((2 * a1 * a2 * sqrt(1 - pow((a1*a1 + a2*a2 - x*x - y*y), 2) / (4 * a1*a1 * a2*a2))) / (a1*a1 - a2*a2 + x*x + y*y));
-  float angle2 = PI - acos((a1*a1 + a2*a2 - x*x - y*y) / (2 * a1 * a2));
+    //  simplified with MATLAB
+    // float angle1 = atan(y / x) - atan((2 * a1 * a2 * sqrt(1 - pow((a1*a1 + a2*a2 - x*x - y*y), 2) / (4 * a1*a1 * a2*a2))) / (a1*a1 - a2*a2 + x*x + y*y));
+    // float angle2 = PI - acos((a1*a1 + a2*a2 - x*x - y*y) / (2 * a1 * a2));
 
-  pwm.setPWM(j1, 0, angleToPulse(angle1, 's'));
-  pwm.setPWM(j2, 0, angleToPulse(angle2, 's'));
-  Serial.print("Angle1: ");
-  Serial.print(angle1);
-  Serial.print( "Angle2: ");
-  Serial.println(angle2);
-}
+
+    // algebraically derived IK
+    float angle2 = acos( ( x*x + y*y - a1*a1 - a2*a2) / (2*a1*a2));
+    float angle1 = atan(x/y) - atan( ( a2*sin(angle2) ) / (a1+a2*cos(angle1)));
+
+    pwm.setPWM(j1, 0, angleToPulse(angle1, 's'));
+    pwm.setPWM(j2, 0, angleToPulse(angle2, 's'));
+    Serial.print("Angle1: ");
+    Serial.print(angle1);
+    Serial.print( "Angle2: ");
+    Serial.println(angle2);
+  }
 
 void loop() {
 
