@@ -15,13 +15,16 @@
 #define j1 0
 #define j2 1
 
-float a1, a2;
+//testing lengths
+float a1 = 12;
+float a2 = 10;
 
 Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver();
 
 void setup() {
   pwm.begin();
   pwm.setPWMFreq(50);  // 50 Hz standard for hobby servos
+  Serial.begin(9600);
 }
 
 int angleToPulse(int angle, char type) {
@@ -50,7 +53,29 @@ void setPos(float x, float y) {
 
   pwm.setPWM(j1, 0, angleToPulse(q1, 's'));
   pwm.setPWM(j2, 0, angleToPulse(q2, 's'));
+  Serial.print("Angle1: ");
+  Serial.print(q1);
+  Serial.print( "Angle2: ");
+  Serial.println(q2);
 }
 
 void loop() {
+
+  if (Serial.available() > 0) {
+    String input = Serial.readStringUntil('\n');
+    input.trim;
+
+    int separator = input.indexOf(':');
+    if (separator > 0) {
+      String xStr = input.substring(0,separator);
+      String yStr = input.substring(separator + 1);
+      int x = xStr.toFloat();
+      int y = yStr.toFloat();
+      setPos(float x, float y);
+      Serial.print("X: ");
+      Serial.print(x);
+      Serial.print(" Y: ");
+      Serial.println(y);
+    }
+  }
 }
