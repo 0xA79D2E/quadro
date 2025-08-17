@@ -11,12 +11,13 @@
 #define MG90S_MAX 520
 
 //PWM channels on PCA9685
-#define j1 0
-#define j2 1
+#define j0 0
+#define j1 1
+#define j2 2
 
 //testing lengths
-float a1 = 12;
-float a2 = 10;
+float a1 = 6;
+float a2 = 5;
 
 Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver();
 
@@ -24,9 +25,11 @@ void setup() {
   pwm.begin();
   pwm.setPWMFreq(50);  // 50 Hz standard for hobby servos
   Serial.begin(9600);
+  pwm.setPWM(0, 0, angleToPulse(90,'r'));
 }
 
 int angleToPulse(int angle, char type) {
+
   if (type == 'r') return map(angle, 0, 180, MG996R_MIN, MG996R_MAX);
   return map(angle, 0, 180, MG90S_MIN, MG90S_MAX);
 }
@@ -60,13 +63,21 @@ int angleToPulse(int angle, char type) {
 
     // algebraically derived IK
     float angle2 = acos( ( x*x + y*y - a1*a1 - a2*a2) / (2*a1*a2));
-    float angle1 = atan(x/y) - atan( ( a2*sin(angle2) ) / (a1+a2*cos(angle1)));
+    float angle1 = atan2(y,x) - atan2( ( a2*sin(angle2) ) , (a1+(a2*cos(angle2))) );
 
+    // float temp = atan(y/x);
+    // float s2 = a2 * sin(angle2);
+    // float c1 = a1 + (a2*cos(angle1));
+
+    // angle1 = temp - atan( s2 / c1);
+
+    angle2 = (angle2 / (2*PI)) * 360;
+    angle1 = (angle1 / (2*PI)) * 360;
     pwm.setPWM(j1, 0, angleToPulse(angle1, 's'));
     pwm.setPWM(j2, 0, angleToPulse(angle2, 's'));
     Serial.print("Angle1: ");
     Serial.print(angle1);
-    Serial.print( "Angle2: ");
+    Serial.print(" Angle2: ");
     Serial.println(angle2);
   }
 
@@ -80,8 +91,8 @@ void loop() {
     if (separator > 0) {
       String xStr = input.substring(0,separator);
       String yStr = input.substring(separator + 1);
-      int x = xStr.toFloat();
-      int y = yStr.toFloat();
+      float x = xStr.toFloat();
+      float y = yStr.toFloat();
       setPos(x, y);
       Serial.print("X: ");
       Serial.print(x);
